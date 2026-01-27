@@ -50,5 +50,40 @@ def add_author():
         error_message=error_message
     )
 
+
+@app.route('/add_book', methods=['GET', 'POST'])
+def add_book():
+    success_message = None
+    error_message = None
+
+    authors = Author.query.all()
+
+    if request.method == 'POST':
+        title = request.form.get("title")
+        publication_year = request.form.get("publication_year")
+        author_id = request.form.get("author_id")
+        isbn = request.form.get("isbn")
+
+        if not title or not publication_year or not author_id or not isbn:
+            error_message = "Title, publication year, ISBN and author id are required."
+        else:
+            new_book = Book(
+            title = title,
+            isbn = isbn,
+            publication_year = int(publication_year),
+            author_id = int(author_id)
+            )
+
+            db.session.add(new_book)
+            db.session.commit()
+            success_message = "Book added successfully!"
+
+    return render_template(
+        'add_book.html',
+        authors=authors,
+        success_message=success_message,
+        error_message=error_message
+    )
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)
