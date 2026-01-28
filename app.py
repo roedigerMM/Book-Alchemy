@@ -16,20 +16,31 @@ db.init_app(app)
 @app.route('/')
 def home():
     sort_option = request.args.get('sort', 'title')
+    order_option = request.args.get('order', 'asc')
 
     query = Book.query.options(joinedload(Book.author))
 
     if sort_option == 'author':
-        query = query.join(Author).order_by(Author.name)
+        query = query.join(Author)
+
+        if order_option == 'desc':
+            query = query.order_by(Author.name.desc())
+        else:
+            query = query.order_by(Author.name.asc())
+
     else:
-        query = query.order_by(Book.title)
+        if order_option == 'desc':
+            query = query.order_by(Book.title.desc())
+        else:
+            query = query.order_by(Book.title.asc())
 
     books = query.all()
 
     return render_template(
         'home.html',
         books=books,
-        current_sort=sort_option
+        current_sort=sort_option,
+        current_order=order_option
     )
 
 @app.route('/add_author', methods=['GET', 'POST'])

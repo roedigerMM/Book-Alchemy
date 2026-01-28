@@ -21,9 +21,9 @@
   <body>
     <form method="get">
 
-    <label for="sort">Sort by:</label>
+    <label>Sort by:</label>
 
-    <select name="sort" id="sort" onchange="this.form.submit()">
+    <select name="sort" onchange="this.form.submit()">
 
     <option value="title"
       {% if current_sort == 'title' %}selected{% endif %}>
@@ -37,10 +37,23 @@
 
     </select>
 
+    <select name="order" onchange="this.form.submit()">
+
+    <option value="asc"
+      {% if current_order == 'asc' %}selected{% endif %}>
+      A → Z
+    </option>
+
+    <option value="desc"
+      {% if current_order == 'desc' %}selected{% endif %}>
+      Z → A
+    </option>
+
+    </select>
+
     </form>
 
 <hr>
-
 
     {% for book in books %}
     <div class="book">
