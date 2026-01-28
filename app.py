@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template
 from sqlalchemy.orm import joinedload
+from sqlalchemy import or_
 import os
 from data_models import db, Author, Book
 from datetime import datetime
@@ -17,22 +18,32 @@ db.init_app(app)
 def home():
     sort_option = request.args.get('sort', 'title')
     order_option = request.args.get('order', 'asc')
+    search_query = request.args.get('q', '').strip()
 
     query = Book.query.options(joinedload(Book.author))
 
+    # JOIN author table for searching & sorting
+    query = query.join(Author)
+
+    # SEARCH FILTER (LIKE)
+    if search_query:
+        query = query.filter(
+            or_(
+                Book.title.ilike(f"%{search_query}%"),
+                Author.name.ilike(f"%{search_query}%")
+            )
+        )
+
+    # SORTING
     if sort_option == 'author':
-        query = query.join(Author)
-
-        if order_option == 'desc':
-            query = query.order_by(Author.name.desc())
-        else:
-            query = query.order_by(Author.name.asc())
-
+        sort_column = Author.name
     else:
-        if order_option == 'desc':
-            query = query.order_by(Book.title.desc())
-        else:
-            query = query.order_by(Book.title.asc())
+        sort_column = Book.title
+
+    if order_option == 'desc':
+        query = query.order_by(sort_column.desc())
+    else:
+        query = query.order_by(sort_column.asc())
 
     books = query.all()
 
@@ -40,7 +51,8 @@ def home():
         'home.html',
         books=books,
         current_sort=sort_option,
-        current_order=order_option
+        current_order=order_option,
+        search_query=search_query
     )
 
 @app.route('/add_author', methods=['GET', 'POST'])

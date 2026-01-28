@@ -21,6 +21,17 @@
   <body>
     <form method="get">
 
+    <!-- Search -->
+    <input
+        type="text"
+        name="q"
+        placeholder="Search books or authors..."
+        value="{{ search_query }}"
+    >
+
+    <button type="submit">Search</button>
+
+    <!-- Sorting -->
     <label>Sort by:</label>
 
     <select name="sort" onchange="this.form.submit()">
@@ -55,23 +66,25 @@
 
 <hr>
 
+    {% if books %}
     {% for book in books %}
-    <div class="book">
+        <div class="book">
+            <img
+              src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+              width="120"
+              onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'"
+            >
 
-    <img
-      src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
-      alt="Cover of {{ book.title }}"
-      width="120"
-      onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'"
-    >
-
-    <div>
-      <h3>{{ book.title }} — {{ book.author.name }}</h3>
-      <p>Published: {{ book.publication_year }}</p>
-    </div>
-
-    </div>
+            <div>
+              <h3>{{ book.title }} — {{ book.author.name }}</h3>
+              <p>Published: {{ book.publication_year }}</p>
+            </div>
+        </div>
     {% endfor %}
+    {% else %}
+    <p><strong>No books found matching your search.</strong></p>
+    {% endif %}
+
 
   </body>
 </html>
