@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import joinedload
 import os
 from data_models import db, Author, Book
 from datetime import datetime
@@ -15,8 +15,22 @@ db.init_app(app)
 
 @app.route('/')
 def home():
-    books = Book.query.all()
-    return render_template('home.html', books=books)
+    sort_option = request.args.get('sort', 'title')
+
+    query = Book.query.options(joinedload(Book.author))
+
+    if sort_option == 'author':
+        query = query.join(Author).order_by(Author.name)
+    else:
+        query = query.order_by(Book.title)
+
+    books = query.all()
+
+    return render_template(
+        'home.html',
+        books=books,
+        current_sort=sort_option
+    )
 
 @app.route('/add_author', methods=['GET', 'POST'])
 def add_author():

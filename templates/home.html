@@ -19,6 +19,28 @@
     </style>
   </head>
   <body>
+    <form method="get">
+
+    <label for="sort">Sort by:</label>
+
+    <select name="sort" id="sort" onchange="this.form.submit()">
+
+    <option value="title"
+      {% if current_sort == 'title' %}selected{% endif %}>
+      Title
+    </option>
+
+    <option value="author"
+      {% if current_sort == 'author' %}selected{% endif %}>
+      Author
+    </option>
+
+    </select>
+
+    </form>
+
+<hr>
+
 
     {% for book in books %}
     <div class="book">
