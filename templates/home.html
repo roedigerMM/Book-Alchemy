@@ -1,96 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <style>
-        .book {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Library</title>
 
-        .book img {
-            border-radius: 6px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-        }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
+
   <body>
-    {% if message %}
-    <p><strong>{{ message }}</strong></p>
-    {% endif %}
-    <form method="get">
-
-    <!-- Search -->
-    <input
-        type="text"
-        name="q"
-        placeholder="Search books or authors..."
-        value="{{ search_query }}"
-    >
-
-    <button type="submit">Search</button>
-
-    <!-- Sorting -->
-    <label>Sort by:</label>
-
-    <select name="sort" onchange="this.form.submit()">
-
-    <option value="title"
-      {% if current_sort == 'title' %}selected{% endif %}>
-      Title
-    </option>
-
-    <option value="author"
-      {% if current_sort == 'author' %}selected{% endif %}>
-      Author
-    </option>
-
-    </select>
-
-    <select name="order" onchange="this.form.submit()">
-
-    <option value="asc"
-      {% if current_order == 'asc' %}selected{% endif %}>
-      A → Z
-    </option>
-
-    <option value="desc"
-      {% if current_order == 'desc' %}selected{% endif %}>
-      Z → A
-    </option>
-
-    </select>
-
-    </form>
-
-<hr>
-
-    {% if books %}
-    {% for book in books %}
-        <div class="book">
-            <img
-              src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
-              width="120"
-              onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'"
-            >
-
-            <div>
-              <h3>{{ book.title }} — {{ book.author.name }}</h3>
-              <p>Published: {{ book.publication_year }}</p>
-              <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}">
-                <button type="submit">Delete Book</button>
-              </form>
-            </div>
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Library</h1>
+          <p>Search, sort, and manage your books.</p>
         </div>
-    {% endfor %}
-    {% else %}
-    <p><strong>No books found matching your search.</strong></p>
-    {% endif %}
+        <div class="controls">
+            <a href="{{ url_for('add_author') }}">
+                <button type="button">Add Author</button>
+            </a>
 
+            <a href="{{ url_for('add_book') }}">
+                 <button class="btn-primary" type="button">Add Book</button>
+            </a>
+        </div>
+      </div>
 
+      <div class="panel">
+        <form class="toolbar" method="get">
+          <div class="controls">
+            <input
+              class="input"
+              type="text"
+              name="q"
+              placeholder="Search books or authors..."
+              value="{{ search_query }}"
+            />
+
+            <select name="sort" onchange="this.form.submit()">
+              <option value="title" {% if current_sort == 'title' %}selected{% endif %}>
+                Title
+              </option>
+              <option value="author" {% if current_sort == 'author' %}selected{% endif %}>
+                Author
+              </option>
+            </select>
+
+            <select name="order" onchange="this.form.submit()">
+              <option value="asc" {% if current_order == 'asc' %}selected{% endif %}>
+                A → Z
+              </option>
+              <option value="desc" {% if current_order == 'desc' %}selected{% endif %}>
+                Z → A
+              </option>
+            </select>
+          </div>
+
+          <div class="controls">
+            <button class="btn-primary" type="submit">Search</button>
+          </div>
+        </form>
+      </div>
+
+      {% if message %}
+        <div class="alert panel">{{ message }}</div>
+      {% endif %}
+
+      <hr class="sep">
+
+      {% if books %}
+        <div class="grid">
+          {% for book in books %}
+            <div class="card">
+              <img
+                class="cover"
+                src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+                alt="Cover for {{ book.title }}"
+                onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'"
+              />
+
+              <div class="meta">
+                <h3 class="title">{{ book.title }}</h3>
+                <p class="subtitle">{{ book.author.name }} • {{ book.publication_year }}</p>
+
+                <div class="actions">
+                  <!-- Keep this if you implemented the delete route -->
+                  <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}">
+                    <button class="btn-danger" type="submit">Delete</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="panel alert">
+          <strong>No books found</strong> matching your search.
+        </div>
+      {% endif %}
+    </div>
   </body>
 </html>

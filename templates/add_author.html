@@ -1,29 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Add Author</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
+
   <body>
-  {% if error_message %}
-  <p style="color:red;">{{ error_message }}</p>
-  {% endif %}
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Add a new author</h1>
+          <p>Create an author entry for your library.</p>
+        </div>
 
-  {% if success_message %}
-  <p style="color:green;">{{ success_message }}</p>
-  {% endif %}
+        <div class="controls">
+          <a href="{{ url_for('home') }}">
+            <button type="button">Back to Library</button>
+          </a>
+        </div>
+      </div>
 
-  <form action="/add_author" method="POST">
-  <label for="name">Author Name:</label> 
-  <input type="text" id="name" name="name" required><br><br>
-  
-  <label for="birthdate">Birthdate:</label>
-  <input type="date" id="birthdate" name="birth_date" required><br><br>
-  <label for="date_of_death">Date of Death:</label> 
-  <input type="date" id="date_of_death" name="date_of_death"><br><br>
-  <input type="submit" value="Add Author"> 
-  </form>
+      {% if error_message %}
+        <div class="alert panel">{{ error_message }}</div>
+      {% endif %}
 
+      {% if success_message %}
+        <div class="alert panel">{{ success_message }}</div>
+      {% endif %}
+
+      <div class="panel" style="margin-top: 16px;">
+        <form class="toolbar" action="{{ url_for('add_author') }}" method="POST">
+          <div class="controls" style="width: 100%;">
+            <label for="name" style="color: var(--muted); font-size: 13px;">Author name</label>
+            <input class="input" type="text" id="name" name="name" required />
+          </div>
+
+          <div class="controls" style="width: 100%;">
+            <label for="birthdate" style="color: var(--muted); font-size: 13px;">Birth date</label>
+            <input class="input" type="date" id="birthdate" name="birth_date" required />
+          </div>
+
+          <div class="controls" style="width: 100%;">
+            <label for="date_of_death" style="color: var(--muted); font-size: 13px;">Date of death (optional)</label>
+            <input class="input" type="date" id="date_of_death" name="date_of_death" />
+          </div>
+
+          <div class="controls" style="width: 100%; justify-content: flex-end;">
+            <button class="btn-primary" type="submit">Add Author</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </body>
 </html>

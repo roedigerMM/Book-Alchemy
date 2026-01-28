@@ -1,45 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Add Book</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   </head>
+
   <body>
-  <h2>Add a New Book</h2>
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <h1>Add a new book</h1>
+          <p>Fill in the details and save it to your library.</p>
+        </div>
 
-  {% if error_message %}
-  <p style="color:red;">{{ error_message }}</p>
-  {% endif %}
+        <div class="controls">
+          <a href="{{ url_for('home') }}">
+            <button type="button">Back to Library</button>
+          </a>
+        </div>
+      </div>
 
-  {% if success_message %}
-  <p style="color:green;">{{ success_message }}</p>
-  {% endif %}
-  <form action="/add_book" method="POST">
-    <label>Title:</label><br>
-    <input type="text" name="title" required><br><br>
+      {% if error_message %}
+        <div class="alert panel">{{ error_message }}</div>
+      {% endif %}
 
-    <label>ISBN:</label><br>
-    <input type="text" name="isbn" required><br><br>
+      {% if success_message %}
+        <div class="alert panel">{{ success_message }}</div>
+      {% endif %}
 
-    <label>Publication Year:</label><br>
-    <input type="number" name="publication_year" min="1000" max="2100" required><br><br>
+      <div class="panel" style="margin-top: 16px;">
+        <form class="toolbar" action="{{ url_for('add_book') }}" method="POST">
+          <div class="controls" style="width: 100%;">
+            <label style="color: var(--muted); font-size: 13px;">Title</label>
+            <input class="input" type="text" name="title" required />
+          </div>
 
-    <label>Author:</label><br>
-    <select name="author_id" required>
-        <option value="">Select an author</option>
+          <div class="controls" style="width: 100%;">
+            <label style="color: var(--muted); font-size: 13px;">ISBN</label>
+            <input class="input" type="text" name="isbn" required />
+          </div>
 
-        {% for author in authors %}
-            <option value="{{ author.id }}">
-                {{ author.name }}
-            </option>
-        {% endfor %}
-    </select>
+          <div class="controls" style="width: 100%;">
+            <label style="color: var(--muted); font-size: 13px;">Publication year</label>
+            <input class="input" type="number" name="publication_year" min="1000" max="2100" required />
+          </div>
 
-    <br><br>
+          <div class="controls" style="width: 100%;">
+            <label style="color: var(--muted); font-size: 13px;">Author</label>
+            <select name="author_id" required>
+              <option value="">Select an author</option>
+              {% for author in authors %}
+                <option value="{{ author.id }}">{{ author.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
-    <button type="submit">Add Book</button>
-  </form>
-
+          <div class="controls" style="width: 100%; justify-content: flex-end;">
+            <button class="btn-primary" type="submit">Add Book</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </body>
 </html>
