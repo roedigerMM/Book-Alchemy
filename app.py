@@ -13,6 +13,11 @@ db.init_app(app)
 #with app.app_context():
 #  db.create_all()
 
+@app.route('/')
+def home():
+    books = Book.query.all()
+    return render_template('home.html', books=books)
+
 @app.route('/add_author', methods=['GET', 'POST'])
 def add_author():
     success_message = None

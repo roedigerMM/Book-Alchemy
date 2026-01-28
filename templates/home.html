@@ -8,7 +8,20 @@
   <body>
 
     {% for book in books %}
-    <div> <h3>{{ book.title }}</h3>
+    <div class="book">
+
+    <img
+      src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+      alt="Cover of {{ book.title }}"
+      width="120"
+      onerror="this.src='https://via.placeholder.com/120x180?text=No+Cover'"
+    >
+
+    <div>
+      <h3>{{ book.title }} — {{ book.author.name }}</h3>
+      <p>Published: {{ book.publication_year }}</p>
+    </div>
+
     </div>
     {% endfor %}
 
