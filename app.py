@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, redirect, url_for
 from sqlalchemy.orm import joinedload
 from sqlalchemy import or_
 import os
@@ -19,6 +19,7 @@ def home():
     sort_option = request.args.get('sort', 'title')
     order_option = request.args.get('order', 'asc')
     search_query = request.args.get('q', '').strip()
+    message = request.args.get("msg")
 
     query = Book.query.options(joinedload(Book.author))
 
@@ -52,7 +53,8 @@ def home():
         books=books,
         current_sort=sort_option,
         current_order=order_option,
-        search_query=search_query
+        search_query=search_query,
+        message=message
     )
 
 @app.route('/add_author', methods=['GET', 'POST'])
@@ -126,6 +128,27 @@ def add_book():
         success_message=success_message,
         error_message=error_message
     )
+
+
+@app.route("/book/<int:book_id>/delete", methods=["POST"])
+def delete_book(book_id):
+    book = Book.query.get(book_id)
+
+    if book is None:
+        return redirect(url_for("home", msg="Book not found (already deleted)."))
+
+    title = book.title
+    author = book.author
+    author_id = book.author_id
+
+    remaining = Book.query.filter(Book.author_id == author_id, Book.id != book_id).count()
+
+    db.session.delete(book)
+    if remaining == 0 and author is not None:
+        db.session.delete(author)
+
+    db.session.commit()
+    return redirect(url_for("home", msg=f'Deleted "{title}" successfully.'))
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5001, debug=True)

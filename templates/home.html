@@ -19,6 +19,9 @@
     </style>
   </head>
   <body>
+    {% if message %}
+    <p><strong>{{ message }}</strong></p>
+    {% endif %}
     <form method="get">
 
     <!-- Search -->
@@ -78,6 +81,9 @@
             <div>
               <h3>{{ book.title }} — {{ book.author.name }}</h3>
               <p>Published: {{ book.publication_year }}</p>
+              <form method="post" action="{{ url_for('delete_book', book_id=book.id) }}">
+                <button type="submit">Delete Book</button>
+              </form>
             </div>
         </div>
     {% endfor %}
