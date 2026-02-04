@@ -39,18 +39,28 @@ def normalize_author_name(name: str) -> str:
     return name.lower()
 
 
-def normalize_isbn(isbn: str) -> str:
+def normalize_isbn(isbn: str) -> str | None:
     """
-    Normalize ISBN by removing spaces and hyphens.
-    Example: "978-1-4028-9462-6" -> "9781402894626"
+    Normalize ISBN for storage and comparison.
+
+    Rules:
+    - Remove spaces and hyphens
+    - Allow digits
+    - Allow trailing X (ISBN-10)
+    - Uppercase X
+    - Reject anything else
     """
     if not isbn:
-        return ""
+        return None
 
     # Remove spaces and hyphens
-    isbn = isbn.replace(" ", "").replace("-", "")
+    cleaned = isbn.replace(" ", "").replace("-", "").upper()
 
-    return isbn
+    # ISBN must be digits, optionally ending with X
+    if not re.fullmatch(r"\d+X?", cleaned):
+        return None
+
+    return cleaned
 
 # Resolve the absolute project directory so the SQLite path works regardless of where
 # the app is started from (e.g., different working directories).
@@ -224,12 +234,93 @@ def add_book():
     GET:
         Render the form (including list of authors to choose from).
     POST:
-        Validate required fields, convert numeric fields, insert into the database.
+        Validate required fields, convert numeric fields,
+        check for ISBN uniqueness, insert into the database.
 
     Required fields:
         title, publication_year, isbn, author_id
     """
-    success_message = None
+
+    # Load authors for the dropdown (GET and POST)
+    authors = Author.query.order_by(Author.name).all()
+
+    if request.method == "POST":
+        raw_isbn = request.form.get("isbn")
+        title = request.form.get("title")
+        publication_year = request.form.get("publication_year")
+        author_id = request.form.get("author_id")
+
+        # Normalize ISBN
+        normalized_isbn = normalize_isbn(raw_isbn)
+
+        # Basic validation
+        if not normalized_isbn or not title or not publication_year or not author_id:
+            error_message = "All fields are required and ISBN must be valid."
+            return render_template(
+                "add_book.html",
+                authors=authors,
+                error_message=error_message,
+            )
+
+        # publication_year must be int
+        try:
+            publication_year = int(publication_year)
+        except ValueError:
+            return render_template(
+                "add_book.html",
+                authors=authors,
+                error_message="Publication year must be a number.",
+            )
+
+        # Check author exists
+        author = Author.query.get(author_id)
+        if not author:
+            return render_template(
+                "add_book.html",
+                authors=authors,
+                error_message="Selected author does not exist.",
+            )
+
+        # Check ISBN uniqueness
+        existing_book = Book.query.filter_by(isbn=normalized_isbn).first()
+        if existing_book:
+            return render_template(
+                "add_book.html",
+                authors=authors,
+                error_message="ISBN already exists.",
+            )
+
+        # Create book
+        new_book = Book(
+            isbn=normalized_isbn,
+            title=title.strip(),
+            publication_year=publication_year,
+            author_id=author.id,
+        )
+
+        try:
+            db.session.add(new_book)
+            db.session.commit()
+            success_message = "Book successfully created."
+        except IntegrityError:
+            db.session.rollback()
+            return render_template(
+                "add_book.html",
+                authors=authors,
+                error_message="ISBN already exists.",
+            )
+
+        return render_template(
+            "add_book.html",
+            authors=authors,
+            success_message=success_message,
+        )
+
+    return render_template(
+        "add_book.html",
+        authors=authors,
+    )
+    """success_message = None
     error_message = None
 
     # Used to populate an author selection widget in the template.
@@ -260,7 +351,7 @@ def add_book():
         authors=authors,
         success_message=success_message,
         error_message=error_message,
-    )
+    )"""
 
 
 @app.route("/book/<int:book_id>/delete", methods=["POST"])
