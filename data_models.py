@@ -20,6 +20,7 @@ class Author(db.Model):
     Columns:
         id: Integer primary key.
         name: Author name (required).
+        name_normalized: Author name (normalized lower-case; unique).
         birth_date: Date of birth (required).
         date_of_death: Date of death (optional).
 
@@ -29,6 +30,7 @@ class Author(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(255), nullable=False)
+    name_normalized = db.Column(db.String(255), nullable=False, unique=True)
     birth_date = db.Column(db.Date, nullable=False)
     date_of_death = db.Column(db.Date, nullable=True)
 
@@ -51,7 +53,7 @@ class Book(db.Model):
 
     Columns:
         id: Integer primary key.
-        isbn: ISBN string (required).
+        isbn: ISBN string (required; unique).
         title: Book title (required).
         publication_year: Publication year (required).
         author_id: Foreign key referencing Author.id (required).
@@ -61,7 +63,7 @@ class Book(db.Model):
     """
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    isbn = db.Column(db.String(255), nullable=False)
+    isbn = db.Column(db.String(255), nullable=False, unique=True)
     title = db.Column(db.String(255), nullable=False)
     publication_year = db.Column(db.Integer, nullable=False)
 

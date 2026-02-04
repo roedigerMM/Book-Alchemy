@@ -3,16 +3,19 @@
 A small Flask web app to manage a personal library (authors + books) using SQLAlchemy and a local SQLite database. [file:1]
 
 ## Features
-- Homepage lists all books, with search and sorting. [file:1]
-- Add authors and books via simple HTML forms. [file:1]
-- SQLite database stored at `./data/library.sqlite`. [file:1]
-- Modern UI styling via a shared CSS file (recommended: `static/style.css`) using flexbox cards and a toolbar.
+
+-   Homepage lists all books, with search and sorting. [file:1]
+-   Add authors and books via simple HTML forms. [file:1]
+-   SQLite database stored at `./data/library.sqlite`. [file:1]
+-   Modern UI styling via a shared CSS file (recommended: `static/style.css`) using flexbox cards and a toolbar.
 
 ## Tech stack
-- Flask (server + routing + templates). [file:1]
-- SQLAlchemy (ORM) via your `db`, `Author`, and `Book` models. [file:1]
+
+-   Flask (server + routing + templates). [file:1]
+-   SQLAlchemy (ORM) via your `db`, `Author`, and `Book` models. [file:1]
 
 ## Project structure
+
 Recommended layout:
 
 ```text
@@ -34,7 +37,7 @@ Setup
 1) Create a virtual environment and install dependencies
 
 python -m venv .venv
-# Windows: .venv\Scripts\activate
+# Windows: .venvScriptsactivate
 source .venv/bin/activate
 
 pip install -r requirements.txt
@@ -77,3 +80,4 @@ UI styling (modern design)
 Notes
 	•	The homepage search uses a case-insensitive filter ( ilike ) across book titles and author names. file:1
 	•	Sorting can be done by book title or author name, ascending or descending.
+```

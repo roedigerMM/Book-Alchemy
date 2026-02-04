@@ -14,12 +14,43 @@ Database:
 
 import os
 from datetime import datetime
-
 from flask import Flask, request, render_template, redirect, url_for
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
-
 from data_models import db, Author, Book
+from sqlalchemy.exc import IntegrityError
+import re
+
+def normalize_author_name(name: str) -> str:
+    """
+    Normalize author names for case-insensitive uniqueness comparison.
+    Example: "  George   Orwell " -> "george orwell"
+    """
+    if not name:
+        return ""
+
+    # Strip leading/trailing whitespace
+    name = name.strip()
+
+    # Collapse multiple spaces into one
+    name = re.sub(r"\s+", " ", name)
+
+    # Lowercase for case-insensitive matching
+    return name.lower()
+
+
+def normalize_isbn(isbn: str) -> str:
+    """
+    Normalize ISBN by removing spaces and hyphens.
+    Example: "978-1-4028-9462-6" -> "9781402894626"
+    """
+    if not isbn:
+        return ""
+
+    # Remove spaces and hyphens
+    isbn = isbn.replace(" ", "").replace("-", "")
+
+    return isbn
 
 # Resolve the absolute project directory so the SQLite path works regardless of where
 # the app is started from (e.g., different working directories).
@@ -36,8 +67,8 @@ db.init_app(app)
 
 # One-time initialization helper: create tables based on the models in data_models.py.
 # Run once, then comment out to avoid accidentally recreating tables.
-# with app.app_context():
-#     db.create_all()
+#with app.app_context():
+#    db.create_all()
 
 
 @app.route("/")
@@ -100,42 +131,89 @@ def add_author():
     GET:
         Render the form.
     POST:
-        Validate required fields, parse dates, insert into the database.
+        Validate required fields, check for author uniqueness,
+        parse dates, insert into the database.
 
     Notes:
         - birth_date is required and must be YYYY-MM-DD.
         - date_of_death is optional and, if provided, must be YYYY-MM-DD.
     """
-    success_message = None
-    error_message = None
 
     if request.method == "POST":
         # Read form fields.
-        name = request.form.get("name")
+        raw_name = request.form.get("name")
         birth_date = request.form.get("birth_date")  # expected YYYY-MM-DD
-        date_of_death = request.form.get("date_of_death")
+        date_of_death = request.form.get("date_of_death") # expected YYYY-MM-DD
+
+        # Normalize for uniqueness check
+        normalized_name = normalize_author_name(raw_name)
 
         # Basic validation.
-        if not name or not birth_date:
+        if not normalized_name or not birth_date:
             error_message = "Name and birth date are required."
-        else:
-            # Convert string inputs into actual Python date objects.
-            birth_date = datetime.strptime(birth_date, "%Y-%m-%d").date()
-            date_of_death = (
-                datetime.strptime(date_of_death, "%Y-%m-%d").date()
-                if date_of_death
-                else None
+            return render_template(
+                "add_author.html",
+                error_message=error_message,
             )
 
-            new_author = Author(name=name, birth_date=birth_date, date_of_death=date_of_death)
+        # Check if author already exists
+        existing_author = Author.query.filter_by(
+            name_normalized=normalized_name
+        ).first()
+
+        if existing_author:
+            error_message = "Author already exists."
+            return render_template(
+                "add_author.html",
+                error_message=error_message)
+
+        # Parse birth_date (required)
+        try:
+            birth_date = datetime.strptime(birth_date, "%Y-%m-%d").date()
+        except ValueError:
+            return render_template(
+                "add_author.html",
+                error_message="Birth date must be in YYYY-MM-DD format."
+            )
+
+        # Parse date_of_death (optional)
+        if date_of_death:
+            try:
+                date_of_death = datetime.strptime(date_of_death, "%Y-%m-%d").date()
+            except ValueError:
+                return render_template(
+                    "add_author.html",
+                    error_message="Date of death must be in YYYY-MM-DD format."
+                )
+        else:
+            date_of_death = None
+
+        # Store new author
+        new_author = Author(
+            name=raw_name.strip(),
+            name_normalized=normalized_name,
+            birth_date=birth_date,
+            date_of_death=date_of_death,
+        )
+
+        try:
             db.session.add(new_author)
             db.session.commit()
-            success_message = "Author added successfully!"
+            success_message = "Author successfully created."
+        except IntegrityError:
+            db.session.rollback()
+            error_message = "Author already exists."
+            return render_template(
+                "add_author.html",
+                error_message=error_message)
+
+        return render_template(
+            "add_author.html",
+            success_message=success_message
+        )
 
     return render_template(
-        "add_author.html",
-        success_message=success_message,
-        error_message=error_message,
+        "add_author.html"
     )
 
 
